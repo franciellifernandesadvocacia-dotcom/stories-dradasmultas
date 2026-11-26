@@ -156,7 +156,26 @@ def ler_respostas(_tg=None):
     for upd in r.get("result", []):
         e["offset"] = upd["update_id"] + 1
         msg = upd.get("message") or {}
-        if str(msg.get("chat", {}).get("id")) != str(chat) or not e.get("ultimo_lote"):
+        if str(msg.get("chat", {}).get("id")) != str(chat):
+            continue
+        if msg.get("photo") or (msg.get("document") or {}).get("mime_type", "").startswith("image/"):
+            try:                                   # foto mandada por ela vira story
+                import foto_story
+                gravar_linhas(campos, linhas) if mudou else None
+                foto_story.processar(msg, chat, _tg)
+                campos, linhas = ler_linhas()
+                mudou = False
+            except Exception as ex:
+                P.avisar(f"não consegui montar o story da foto: {ex}")
+            continue
+        if msg.get("text", "").strip().lower().startswith("cancelar"):
+            futuras = [l for l in linhas if l.get("lote") == "enviada" and l.get("status") == "aprovado"]
+            if futuras:
+                futuras[-1]["status"] = "tirado"
+                mudou = True
+                _tg("sendMessage", {"chat_id": chat, "text": "Cancelado: o último story enviado por você não vai sair."})
+            continue
+        if not e.get("ultimo_lote"):
             continue
         acao, tirar = interpretar(msg.get("text", ""))
         if not acao:

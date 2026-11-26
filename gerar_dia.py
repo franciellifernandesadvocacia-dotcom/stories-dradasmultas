@@ -28,7 +28,7 @@ PERFIL = arte_natural.PERFIL          # perfil.json: nome, temas, tipos, estilo 
 TIPOS = list(PERFIL["tipos"])
 TEMAS = PERFIL["temas"]
 
-REGRAS = PERFIL["descricao"] + "\n\n" + PERFIL["tom"] + """
+REGRAS = PERFIL["descricao"] + "\n\n" + PERFIL["tom"] + "\n\n" + PERFIL.get("regras_extra", "") + """
 
 Regras que nunca podem ser quebradas (Código de Ética e Provimento 205/2021 da OAB):
 - Conteúdo informativo. Nada de promessa ou garantia de resultado ("garantimos", "100%").
@@ -145,6 +145,10 @@ def escrever_stories(cliente, hoje, noticias, quantos, hist):
         versos = ("\nVERSÍCULO DO BOM DIA: no story 1, o texto é UM destes versículos, copiado exatamente como "
                   "está, seguido da referência entre travessões (ex.: \"... — Salmos 23:1\"). Não invente nem "
                   "altere versículos:\n" + "\n".join(f'- {v["texto"]} — {v["ref"]}' for v in livres) + "\n")
+    pauta = PERFIL.get("pauta_semana", {}).get(dia_semana, "")
+    if pauta:
+        versos += f"\nPAUTA DE HOJE ({dia_semana}): {pauta}. Se a notícia escolhida for um caso real ou uma "\
+                  "jurisprudência, os dois stories da notícia usam o tipo caso_real ou jurisprudencia.\n"
     pedido = f"""Escreva os {quantos} stories de {dia_semana}, {hoje:%d/%m/%Y}.
 
 Eles são UMA SEQUÊNCIA que a pessoa assiste em ordem, como uma conversa com começo, meio e fim.
@@ -192,6 +196,8 @@ BASE DE CONHECIMENTO:
         n = st.get("noticia") or 0
         st["link"] = noticias[n - 1]["link"] if st["tipo"] == "noticia" and 1 <= n <= len(noticias) else ""
         # o link não aparece no story; fica só no Telegram (para conferência) e no histórico
+        if st["tipo"] in ("caso_real", "jurisprudencia") and 1 <= n <= len(noticias):
+            st["link"] = noticias[n - 1]["link"]
         if st["tipo"] == "noticia" and not st["link"]:
             st["tipo"] = "pergunta"
     return dados["tema_do_dia"], dados["stories"]
@@ -313,6 +319,7 @@ def gerar(dia, exemplo=False):
         tema, stories = escrever_stories(cli, dia, noticias, quantos, hist)
         stories = stories[:quantos]
     print(f"Tema do dia: {tema}")
+    arte_natural.USADAS[:] = hist.get("fotos", [])
     status = "aprovado" if os.environ.get("APROVACAO", "obrigatoria") == "automatica" else "aguardando"
     linhas = []
     for i, (s, hora) in enumerate(zip(stories, horarios(len(stories))), start=1):
@@ -321,7 +328,7 @@ def gerar(dia, exemplo=False):
         linhas.append({"arquivo": arq, "data": dia.isoformat(), "hora": hora, "status": status, "lote": dia.isoformat()})
         if s.get("assunto"):
             hist["assuntos"].append(s["assunto"])
-        if s["tipo"] == "noticia" and s.get("link") and s["link"] not in [x["link"] for x in hist["links"]]:
+        if s["tipo"] in ("noticia", "caso_real", "jurisprudencia") and s.get("link") and s["link"] not in [x["link"] for x in hist["links"]]:
             hist["noticias"].append(s["titulo"])
             hist["links"].append({"dia": dia.isoformat(), "titulo": s["titulo"], "fonte": s.get("fonte", ""), "link": s["link"]})
         print(f"{hora}  {arq}  {s['titulo']}" + (f"  [{s['link']}]" if s.get("link") else ""))
@@ -330,10 +337,11 @@ def gerar(dia, exemplo=False):
     acrescentar_fila(linhas)
     hist["dias"].append(dia.isoformat())
     hist["temas"].append(tema)
+    hist["fotos"] = arte_natural.USADAS[-200:]
     for v in PERFIL.get("versiculos", []):
         if stories and v["ref"] in stories[0].get("texto", ""):
             hist.setdefault("versiculos", []).append(v["ref"])
-    hist = {k: v[-120:] for k, v in hist.items()}
+    hist = {k: (v[-200:] if k == "fotos" else v[-120:]) for k, v in hist.items()}
     with open(HISTORICO, "w", encoding="utf-8") as f:
         json.dump(hist, f, ensure_ascii=False, indent=1)
     pagina_noticias(hist["links"], os.path.join(os.path.dirname(HISTORICO), "docs", "index.html"))

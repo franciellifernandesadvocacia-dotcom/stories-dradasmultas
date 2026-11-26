@@ -189,3 +189,23 @@ robô → **Enable workflow**.
 - Limite da Meta: 25 publicações por robô a cada 24h (usamos até 10).
 - Se a Meta um dia revogar o token (por exemplo, se o usuário do sistema for apagado), chega
   e-mail de erro: é só gerar outro na Parte B e trocar o `IG_TOKEN`.
+
+---
+
+## 7. Story a partir de uma foto sua (pelo Telegram)
+
+Mande a foto para o robô do Telegram do perfil (academia, café, escritório...). Para melhor
+qualidade, mande como **arquivo** (clipe → Arquivo). Junto, se quiser, escreva instruções:
+
+| Você escreve | O robô faz |
+|---|---|
+| `"segunda começando com café"` (entre aspas) | usa exatamente esse texto |
+| nada | o Claude olha a foto e escreve uma frase curta e elegante |
+| `sem texto` | só a foto com a logo FF |
+| `sem sombra` | tira a sombra preta atrás das letras |
+| `sem escurecer` / `mais escuro` | muda a exposição da foto |
+| `em cima` / `no meio` / `embaixo` | posição do texto |
+| `com faixa` | fundo escuro atrás das letras, como no Instagram |
+| `agora` / `às 18h` | quando publicar (sem pedido: próximo horário livre do dia) |
+
+Em até 30 minutos ele responde com a prévia e o horário. Para desistir, responda `CANCELAR`.

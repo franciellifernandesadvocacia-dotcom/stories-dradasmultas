@@ -44,12 +44,23 @@ def opcoes_de_fundo():
     return cats + ["cor:" + c for c in PERFIL.get("cores", [])]
 
 
+USADAS = []   # nomes das fotos usadas recentemente (o gerador carrega do historico.json)
+
+
 def escolher_foto(nome):
+    """Escolhe uma foto da categoria pedida, dando preferência às que não foram usadas há mais tempo."""
     fotos = _arquivos_de_fotos()
     if nome in fotos:
-        return fotos[nome]
-    candidatas = [c for n, c in fotos.items() if n.startswith(nome + "-") or n.startswith(nome + "_")]
-    return random.choice(candidatas or list(fotos.values()))
+        escolhida = nome
+    else:
+        candidatas = [n for n in fotos if n.startswith(nome + "-") or n.startswith(nome + "_")] or list(fotos)
+        nunca = [n for n in candidatas if n not in USADAS]
+        if nunca:
+            escolhida = random.choice(nunca)
+        else:                                   # todas já usadas: pega a usada há mais tempo
+            escolhida = min(candidatas, key=lambda n: max(i for i, u in enumerate(USADAS) if u == n))
+    USADAS.append(escolhida)
+    return fotos[escolhida]
 
 
 def fonte(tam, peso="Bold"):
