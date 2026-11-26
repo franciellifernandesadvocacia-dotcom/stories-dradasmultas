@@ -370,6 +370,10 @@ def principal(argv=None):
 
     token = os.environ.get("IG_TOKEN", "").strip()
     if not token:
+        normal = not (a.verificar_token or a.so_este or a.renovar_token)
+        if normal and not da_vez(ler_fila()[0], agora, ja_resolvidos())[0]:
+            print("IG_TOKEN ainda não configurado; nada para publicar agora.")
+            return 0
         avisar("IG_TOKEN não configurado.")
         return 1
     ig = Instagram(token, os.environ.get("IG_USER_ID", "").strip())
