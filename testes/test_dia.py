@@ -150,6 +150,7 @@ class TestAprovacao(Ambiente):
         self.assertEqual(A.interpretar("OK"), ("ok", set()))
         self.assertEqual(A.interpretar("ok menos 2 e 5"), ("ok", {2, 5}))
         self.assertEqual(A.interpretar("Não"), ("nao", set()))
+        self.assertEqual(A.interpretar("não 3"), ("ok", {3}))
         self.assertEqual(A.interpretar("bom dia!"), (None, set()))
 
     def test_fluxo_completo(self):
@@ -183,6 +184,17 @@ class TestAprovacao(Ambiente):
             reg = f.read()
         self.assertNotIn("03-noticia", reg)
         self.assertIn("07-dica.jpg", reg)
+
+    def test_automatico_avisa_e_deixa_cancelar(self):
+        os.environ["APROVACAO"] = "automatica"
+        G.gerar(DIA, exemplo=True)
+        tg = TelegramFalso()
+        A.enviar_lote("2026-12-01", _tg=tg)
+        self.assertIn("programados (automático)", tg.enviados[-1][1]["text"])
+        A.ler_respostas(_tg=TelegramFalso(["não 2"]))
+        status = [i["status"] for i in P.ler_fila()[0]]
+        self.assertEqual(status.count("tirado"), 1)
+        self.assertEqual(status.count("aprovado"), 6)
 
     def test_resposta_de_outra_pessoa_e_ignorada(self):
         G.gerar(DIA, exemplo=True)
