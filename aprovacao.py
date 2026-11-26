@@ -94,7 +94,7 @@ def enviar_lote(lote, _tg=None):
         do_dia = [{"arquivo": "exemplo/" + f, "hora": "--:--"} for f in sorted(os.listdir(pasta)) if f.endswith(".jpg")]
     else:
         _, linhas = ler_linhas()
-        do_dia = [l for l in linhas if l.get("lote") == lote and l.get("status") == "aguardando"]
+        do_dia = [l for l in linhas if l.get("lote") == lote and l.get("status") in ("aguardando", "aprovado")]
     if not do_dia:
         return 0
     textos, tema = {}, ""
@@ -116,9 +116,15 @@ def enviar_lote(lote, _tg=None):
     if lote == "exemplo":
         _tg("sendMessage", {"chat_id": chat, "text": "TESTE: estas artes são só um exemplo e NÃO serão publicadas.\n\n" + resumo})
         return 0
-    _tg("sendMessage", {"chat_id": chat, "text":
-        f"Stories de {lote[8:10]}/{lote[5:7]} para aprovar" + (f" (tema: {tema})" if tema else "") + f":\n\n{resumo}\n\n"
-        "Responda:\nOK = aprova todos\nOK menos 2 5 = aprova todos menos esses\nNÃO = não publica nenhum"})
+    if all(l.get("status") == "aprovado" for l in do_dia):  # modo automático: só avisa o que vai sair
+        _tg("sendMessage", {"chat_id": chat, "text":
+            f"Stories de {lote[8:10]}/{lote[5:7]} programados (automático)" + (f" — tema: {tema}" if tema else "") +
+            f":\n\n{resumo}\n\nVão sair sozinhos. Para cancelar algum, responda por exemplo:\n"
+            "NÃO 3 = tira o 3\nNÃO = cancela todos do dia"})
+    else:
+        _tg("sendMessage", {"chat_id": chat, "text":
+            f"Stories de {lote[8:10]}/{lote[5:7]} para aprovar" + (f" (tema: {tema})" if tema else "") + f":\n\n{resumo}\n\n"
+            "Responda:\nOK = aprova todos\nOK menos 2 5 = aprova todos menos esses\nNÃO = não publica nenhum"})
     e = ler_estado()
     e["ultimo_lote"] = lote
     salvar_estado(e)
@@ -129,7 +135,8 @@ def interpretar(texto):
     """Devolve ("ok", {números a tirar}) ou ("nao", set()) ou (None, set())."""
     t = texto.strip().lower()
     if re.match(r"^(n[aã]o|nenhum)\b", t):
-        return "nao", set()
+        nums = set(int(n) for n in re.findall(r"\d+", t))
+        return ("ok", nums) if nums else ("nao", set())   # "NÃO 3" tira só o 3
     if re.match(r"^(ok|sim|aprov)", t):
         tirar = set(int(n) for n in re.findall(r"\d+", t)) if re.search(r"menos|tir|exceto|sem", t) else set()
         return "ok", tirar

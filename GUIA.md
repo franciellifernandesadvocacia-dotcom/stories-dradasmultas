@@ -163,9 +163,10 @@ As artes no visual dos carrosséis ficam para os **destaques**, prontas na pasta
 
 ## 5. No dia a dia
 
-- **Aprovar:** responda no Telegram. `OK` aprova todos; `OK menos 2 5` tira o 2 e o 5; `NÃO`
-  cancela o dia. Se não responder, nada é publicado e você recebe um lembrete.
-  Sem Telegram, dá para aprovar trocando `aguardando` por `aprovado` na `fila.csv` (ícone ✏️).
+- **Modo atual: automático** (variável `APROVACAO` = `automatica`). Às ~19h chegam no Telegram as
+  artes do dia seguinte só para você ver. Elas saem sozinhas. Para cancelar algum, responda
+  `NÃO 3` (tira o 3) ou `NÃO` (cancela o dia). Para voltar a exigir aprovação, troque a variável
+  para `obrigatoria`: aí só sai o que você responder `OK`.
 - **Corrigir uma regra:** edite o `conhecimento.md`. O robô passa a usar a versão nova no
   próximo dia.
 - **Ver o que saiu:** `registro.csv` (`publicado`, `erro` ou `pulado-atrasado`).
