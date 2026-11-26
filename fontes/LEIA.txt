@@ -1,0 +1,2 @@
+Arimo: licença Apache 2.0 (Google Fonts). Pinyon Script: SIL Open Font License 1.1 (Google Fonts).
+Fontes livres, podem ficar no repositório e rodar no servidor.
