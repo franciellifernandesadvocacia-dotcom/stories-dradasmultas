@@ -76,19 +76,21 @@ O custo do Claude é por uso: a busca de notícias e a escrita do dia ficam em t
 4. (Opcional) **Settings → Pages** → `main` e pasta `/docs` → **Save**: cria uma página com a lista
    das notícias já comentadas, se um dia você quiser pôr na bio.
 
-### Parte B: o aplicativo na Meta (20 min)
-É ele que dá ao robô a "chave" (o **token**) para publicar na @dradasmultas.
-1. Entre em **developers.facebook.com** com o seu Facebook → **Começar** (é aqui que aparecem os
-   termos da Meta para desenvolvedores; leia e aceite se concordar).
-2. **Meus apps → Criar app**. Nome: `Stories Doutora das Multas`. Caso de uso: **Gerenciar
-   mensagens e conteúdo no Instagram**. Portfólio: **Fernandes Advocacia Trânsito**. **Criar app**.
-3. No painel: **Casos de uso → Personalizar → Configuração da API com login do Instagram**.
-4. Em **Gerar tokens de acesso → Adicionar conta**, entre com a **@dradasmultas** e autorize
-   *instagram_business_basic* e *instagram_business_content_publish*. Se pedir convite de
-   testador: no app do Instagram, Configurações → Apps e sites → **Convites de testador** → aceitar.
-5. Clique em **Gerar token** e copie o código longo (guarde só até a Parte E).
-6. Não precisa publicar o app nem pedir análise da Meta: ele fica em "Desenvolvimento" e
-   funciona para a sua própria conta.
+### Parte B: o app e a chave na Meta
+O app **Stories Doutora das Multas** já foi criado (id `1161944169703838`, portfólio Fernandes
+Advocacia Trânsito, caso de uso "Gerenciar mensagens e conteúdo no Instagram"). Para apps novos a
+Meta usa o **login unificado** com **token de usuário do sistema, que nunca expira**. Falta só
+gerar a chave (o **token**), feito por você:
+
+1. Abra **business.facebook.com** → portfólio **Fernandes Advocacia Trânsito** → **Configurações**
+   (engrenagem) → **Usuários → Usuários do sistema** → **Adicionar**.
+   Nome: `robo-stories`, função: **Administrador**.
+2. Com o `robo-stories` selecionado → **Atribuir ativos**:
+   - **Apps** → *Stories Doutora das Multas* → controle total;
+   - **Contas do Instagram** → *@dradasmultas* → controle total (ou "Conteúdo").
+3. Clique em **Gerar token** → app *Stories Doutora das Multas* → validade **Nunca** →
+   marque **instagram_basic**, **instagram_content_publish** e **business_management** →
+   **Gerar token**. Copie o código longo e guarde só até a Parte E (ele aparece uma vez só).
 
 ### Parte C: conta no Claude (10 min)
 1. Entre em **console.anthropic.com** e crie a conta (termos e cartão: você decide e digita).
@@ -108,23 +110,20 @@ Crie um por um (nome exatamente assim):
 | Nome | O que colar |
 |---|---|
 | `IG_TOKEN` | token da Meta (Parte B) |
+| `IG_USER_ID` | `17841472104337280` (o número da @dradasmultas) |
 | `ANTHROPIC_API_KEY` | chave do Claude (Parte C) |
 | `TELEGRAM_BOT_TOKEN` | token do BotFather (Parte D) |
 | `TELEGRAM_CHAT_ID` | número da conversa (Parte D) |
 
-Na aba **Variables** (mesma tela), opcional:
+Na aba **Variables** (mesma tela):
 
 | Nome | Valor | Para quê |
 |---|---|---|
+| `API_HOST` | `graph.facebook.com` | **obrigatório**: diz ao robô para usar o login unificado |
 | `STORIES_POR_DIA` | de `5` a `10` (padrão 7) | quantos stories por dia |
 | `APROVACAO` | `obrigatoria` (padrão) ou `automatica` | `automatica` publica sem pedir OK |
 
-**Renovação automática do token do Instagram** (ele vale 60 dias): github.com → sua foto →
-Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new
-token → nome `renovar-token-stories`, validade 1 ano, só o repositório `stories-dradasmultas`,
-permissão **Secrets: Read and write** → copiar → salvar como segredo `PAT_SEGREDOS`. Anote na
-agenda: repetir daqui a 1 ano. Sem isso, a cada ~55 dias chega e-mail pedindo para gerar um
-token novo na Meta e trocar o `IG_TOKEN`.
+Como o token de usuário do sistema **não vence**, não é preciso renovar nada.
 
 ### Parte F: testes, do mais seguro ao real
 Na aba **Actions** (se pedir, clique em *I understand… enable them*):
@@ -187,6 +186,5 @@ robô → **Enable workflow**.
 - O Claude pode errar. Por isso a aprovação vem **ligada por padrão**: troque para
   `automatica` só quando estiver confiante com a qualidade.
 - Limite da Meta: 25 publicações por robô a cada 24h (usamos até 10).
-- Se um dia tiver uma **Página do Facebook** ligada ao Instagram, dá para usar um token que
-  nunca vence: variável `API_HOST` = `graph.facebook.com` e segredo `IG_USER_ID` =
-  `17841472104337280`.
+- Se a Meta um dia revogar o token (por exemplo, se o usuário do sistema for apagado), chega
+  e-mail de erro: é só gerar outro na Parte B e trocar o `IG_TOKEN`.
