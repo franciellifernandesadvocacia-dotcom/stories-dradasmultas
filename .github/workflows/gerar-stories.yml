@@ -33,6 +33,16 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements.txt
 
+      - name: Destrancar as fotos pessoais (se houver)
+        env:
+          FOTOS_CHAVE: ${{ secrets.FOTOS_CHAVE }}
+        run: |
+          if ls fotos.enc.parte-* >/dev/null 2>&1; then
+            if [ -z "$FOTOS_CHAVE" ]; then echo "::error::Falta o segredo FOTOS_CHAVE"; exit 1; fi
+            cat fotos.enc.parte-* | openssl enc -d -aes-256-cbc -pbkdf2 -pass env:FOTOS_CHAVE | tar -xf -
+            echo "$(ls fotos | wc -l) fotos prontas"
+          fi
+
       - name: Gerar
         id: gerar
         env:
