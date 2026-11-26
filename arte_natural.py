@@ -85,6 +85,16 @@ def quebrar(texto, f, largura_max):
                 linhas.append(atual)
                 atual = palavra
         linhas.append(atual)
+    return sem_viuva(linhas, f, largura_max)
+
+
+def sem_viuva(linhas, f, largura_max):
+    """Nunca deixa uma palavra sozinha na última linha: puxa a última palavra da linha de cima."""
+    if len(linhas) >= 2 and len(linhas[-1].split()) == 1 and len(linhas[-2].split()) >= 3:
+        cima = linhas[-2].split()
+        nova = cima[-1] + " " + linhas[-1]
+        if f.getlength(nova) <= largura_max:
+            linhas[-2], linhas[-1] = " ".join(cima[:-1]), nova
     return linhas
 
 
