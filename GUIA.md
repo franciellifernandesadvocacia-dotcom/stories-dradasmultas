@@ -1,0 +1,192 @@
+# Stories automáticos do @dradasmultas: guia de configuração
+
+Guia para a Dra. Francielli. Não precisa saber programar: são só cliques e copiar e colar.
+A configuração é feita **uma vez** (cerca de 1 hora). Depois disso os stories são montados
+e publicados sozinhos, todo dia, mesmo com o computador desligado.
+
+---
+
+## 1. Como funciona
+
+**Todo dia, por volta das 19h**, um robô gratuito do GitHub (site que guarda arquivos e roda
+programas na nuvem):
+
+1. pede ao **Claude** (a inteligência artificial da Anthropic) para **buscar notícias de
+   trânsito** dos últimos dias na internet (multas, CNH, Lei Seca, Detran, acidentes, carros);
+2. abre e lê as matérias inteiras, escolhe o **tema do dia** (CNH suspensa, CNH cassada, multas irregulares ou Lei Seca, em
+   rodízio) e escreve uma **sequência de 5 a 10 stories** com começo, meio e fim:
+   bom dia que já anuncia o assunto → notícia resumida (2 stories) → explicação passo a passo → fechamento;
+3. desenha os stories com cara de feitos no celular (fotos do Unsplash ou cores lisas, texto em
+   etiquetas);
+4. **manda tudo para o seu Telegram**. Você olha e responde **OK** (ou **OK menos 3**, ou **NÃO**).
+
+**No dia seguinte**, entre 7h e 21h, outro robô publica os stories aprovados, um a um, nos
+horários marcados. O que saiu fica anotado no `registro.csv`. Se der erro, chega e-mail.
+
+```
+ 19h  notícias da web ─► Claude escreve a sequência ─► artes ─► Telegram: "OK?"
+                                                                   │
+ dia seguinte, 7h–21h  ◄── só o que você aprovou ──────────────────┘
+         │
+         ▼
+  Instagram @dradasmultas  +  registro.csv  +  e-mail se der erro
+```
+
+### O que o robô respeita (já está nas instruções dele)
+- Regras de trânsito só saem de uma **base conferida** (`conhecimento.md`), que você pode
+  corrigir ou aumentar. O robô não inventa artigo, prazo nem valor.
+- Regras da OAB: conteúdo informativo, sem promessa de resultado, sem preço, sem
+  sensacionalismo, sem nome de vítima de acidente.
+- Notícias resumidas com as palavras dele, só de matérias que ele realmente abriu e leu,
+  sempre com o veículo e a data.
+
+### A notícia vem resumida no próprio story
+O robô **abre e lê a matéria inteira** no site do jornal e conta a notícia em **dois stories**:
+o que aconteceu, e o que isso muda para quem dirige, sempre com o veículo e a data. Ninguém
+precisa clicar em link. (Robôs não conseguem pôr a figurinha de link do Instagram; o link fica
+só na mensagem do Telegram, para você conferir a fonte antes de aprovar.)
+
+---
+
+## 2. As opções que existem (e por que escolhi esta)
+
+| Opção | Custo por mês | Monta os stories sozinho? | Observação |
+|---|---|---|---|
+| Meta Business Suite | grátis | ❌ | Você faz e agenda cada story na mão. |
+| Agendadores pagos (mLabs, Etus…) | R$ 50 a 200 | ❌ | Só agendam o que você já fez. |
+| **GitHub + Claude + API do Instagram** ✅ | **~US$ 5 a 15** (só o Claude) | ✅ busca notícia, escreve, desenha e publica | GitHub e Instagram são grátis. |
+
+O custo do Claude é por uso: a busca de notícias e a escrita do dia ficam em torno de
+**US$ 0,20 a 0,50 por dia**. Dá para pôr um limite de gasto no painel da Anthropic.
+
+---
+
+## 3. Passo a passo (você faz, eu acompanho)
+
+> 🔒 **Segurança:** senhas, códigos e pagamentos quem digita é sempre você. Eu não crio contas,
+> não aceito termos e não cadastro cartão por você. Nunca mande um token por WhatsApp ou e-mail:
+> ele é como uma senha.
+
+### Parte A: GitHub (10 min)
+1. Crie uma conta gratuita em **github.com**.
+2. **+** → **New repository** → nome `stories-dradasmultas` → **Public** → **Create repository**.
+   *(Público é necessário para o Instagram conseguir buscar as imagens. Ali só ficam as artes
+   dos stories, que vão ser públicas de qualquer jeito. Nunca coloque nada de cliente.)*
+3. Me avise. **Com o seu OK**, eu subo os arquivos (ou te mostro como arrastar).
+4. (Opcional) **Settings → Pages** → `main` e pasta `/docs` → **Save**: cria uma página com a lista
+   das notícias já comentadas, se um dia você quiser pôr na bio.
+
+### Parte B: o aplicativo na Meta (20 min)
+É ele que dá ao robô a "chave" (o **token**) para publicar na @dradasmultas.
+1. Entre em **developers.facebook.com** com o seu Facebook → **Começar** (é aqui que aparecem os
+   termos da Meta para desenvolvedores; leia e aceite se concordar).
+2. **Meus apps → Criar app**. Nome: `Stories Doutora das Multas`. Caso de uso: **Gerenciar
+   mensagens e conteúdo no Instagram**. Portfólio: **Fernandes Advocacia Trânsito**. **Criar app**.
+3. No painel: **Casos de uso → Personalizar → Configuração da API com login do Instagram**.
+4. Em **Gerar tokens de acesso → Adicionar conta**, entre com a **@dradasmultas** e autorize
+   *instagram_business_basic* e *instagram_business_content_publish*. Se pedir convite de
+   testador: no app do Instagram, Configurações → Apps e sites → **Convites de testador** → aceitar.
+5. Clique em **Gerar token** e copie o código longo (guarde só até a Parte E).
+6. Não precisa publicar o app nem pedir análise da Meta: ele fica em "Desenvolvimento" e
+   funciona para a sua própria conta.
+
+### Parte C: conta no Claude (10 min)
+1. Entre em **console.anthropic.com** e crie a conta (termos e cartão: você decide e digita).
+2. **Billing**: coloque crédito (US$ 10 dá para começar) e, se quiser, um limite mensal.
+3. **API Keys → Create Key**, nome `stories-dradasmultas`. Copie a chave (guarde até a Parte E).
+
+### Parte D: robô no Telegram para aprovar (5 min)
+1. No Telegram, abra a conversa com **@BotFather** → `/newbot` → dê um nome (ex.: *Stories
+   Doutora das Multas*) e um usuário terminado em `bot`. Ele responde com um **token**: copie.
+2. Abra a conversa com o seu robô novo e mande **oi**.
+3. Me avise: eu te mostro como descobrir o número da sua conversa (o **chat id**).
+
+### Parte E: guardar as chaves no GitHub (5 min)
+No repositório: **Settings → Secrets and variables → Actions → New repository secret**.
+Crie um por um (nome exatamente assim):
+
+| Nome | O que colar |
+|---|---|
+| `IG_TOKEN` | token da Meta (Parte B) |
+| `ANTHROPIC_API_KEY` | chave do Claude (Parte C) |
+| `TELEGRAM_BOT_TOKEN` | token do BotFather (Parte D) |
+| `TELEGRAM_CHAT_ID` | número da conversa (Parte D) |
+
+Na aba **Variables** (mesma tela), opcional:
+
+| Nome | Valor | Para quê |
+|---|---|---|
+| `STORIES_POR_DIA` | de `5` a `10` (padrão 7) | quantos stories por dia |
+| `APROVACAO` | `obrigatoria` (padrão) ou `automatica` | `automatica` publica sem pedir OK |
+
+**Renovação automática do token do Instagram** (ele vale 60 dias): github.com → sua foto →
+Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new
+token → nome `renovar-token-stories`, validade 1 ano, só o repositório `stories-dradasmultas`,
+permissão **Secrets: Read and write** → copiar → salvar como segredo `PAT_SEGREDOS`. Anote na
+agenda: repetir daqui a 1 ano. Sem isso, a cada ~55 dias chega e-mail pedindo para gerar um
+token novo na Meta e trocar o `IG_TOKEN`.
+
+### Parte F: testes, do mais seguro ao real
+Na aba **Actions** (se pedir, clique em *I understand… enable them*):
+
+1. **Gerar stories do dia seguinte → Run workflow** com **"Usar textos de exemplo"** marcado.
+   Não gasta nada. Confere se as artes aparecem na pasta `stories/` e se chegam no Telegram.
+   *(Depois desse teste eu apago o dia de exemplo da fila.)*
+2. **Publicar stories → Run workflow → verificar-token**: ✅ verde e `Token OK. Conta:
+   @dradasmultas` = a chave da Meta funciona. Nada é publicado.
+3. **Gerar stories do dia seguinte → Run workflow** sem marcar exemplo: primeira sequência de
+   verdade, feita pelo Claude (custa centavos). Você confere no Telegram.
+4. **Só com o seu OK:** responda **OK** no Telegram. No dia seguinte os stories começam a sair.
+   Para ver um saindo na hora: **Publicar stories → publicar-um** com o nome do arquivo.
+
+---
+
+## 4. Os destaques
+
+As artes no visual dos carrosséis ficam para os **destaques**, prontas na pasta
+`stories/destaques/` (cada tema com a capa e a sequência):
+
+| Destaque | Stories | Conteúdo |
+|---|---|---|
+| **LEI SECA** | 6 | "Fui pego no bafômetro. E agora?": o que acontece na hora, recusa, suspensão com defesa, reincidência, o que fazer |
+| **CNH SUSPENSA** | 5 | o que é, por que acontece, por quanto tempo, como voltar a dirigir, cuidado com a cassação |
+| **CNH CASSADA** | 5 | diferença para suspensa, quando acontece, 2 anos, comparativo, defesa |
+| **MULTA COM ERRO** | 5 | o que o auto precisa trazer, notificação atrasada, radar, o que conferir |
+| **MULTAS** | 7 | prazo, mito da multa paga, valores, pontos, notificação, celular, indicação de condutor |
+
+**Como montar (pelo celular, uma vez):** o Instagram não deixa robô criar destaque.
+1. Publique a sequência do tema como stories normais. Pelo celular é o mais simples; ou o robô
+   publica com **publicar-um** (ex.: `destaques/lei-seca/01.jpg`).
+2. No perfil: **+ Novo** (destaques) → selecione os stories do tema → nome (ex.: *Lei Seca*).
+3. **Editar capa** → ícone de galeria → escolha a `capa.jpg` do tema (salve no celular antes).
+
+---
+
+## 5. No dia a dia
+
+- **Aprovar:** responda no Telegram. `OK` aprova todos; `OK menos 2 5` tira o 2 e o 5; `NÃO`
+  cancela o dia. Se não responder, nada é publicado e você recebe um lembrete.
+  Sem Telegram, dá para aprovar trocando `aguardando` por `aprovado` na `fila.csv` (ícone ✏️).
+- **Corrigir uma regra:** edite o `conhecimento.md`. O robô passa a usar a versão nova no
+  próximo dia.
+- **Ver o que saiu:** `registro.csv` (`publicado`, `erro` ou `pulado-atrasado`).
+- **Story extra feito por você:** suba o .jpg (em pé, 1080 × 1920) na pasta `stories/` e
+  acrescente uma linha na `fila.csv`: `meu-story.jpg,08/12/2026,10:00,aprovado,`
+- **Horários:** os stories saem entre 7h e 21h, espalhados. O robô passa a cada 30 minutos,
+  então um story das 9:20 sai entre 9:37 e ~10:10.
+- **Imagens antigas** são apagadas da pasta depois de 21 dias (já estão no arquivo do Instagram).
+
+**Atenção:** o GitHub desliga robôs de repositórios **60 dias sem alteração**. Como o robô
+grava algo todo dia, isso só acontece se tudo ficar parado. Para religar: Actions → escolher o
+robô → **Enable workflow**.
+
+---
+
+## 6. Limites honestos
+- Stories pelo robô saem **sem figurinhas** (link, enquete, pergunta, música).
+- O Claude pode errar. Por isso a aprovação vem **ligada por padrão**: troque para
+  `automatica` só quando estiver confiante com a qualidade.
+- Limite da Meta: 25 publicações por robô a cada 24h (usamos até 10).
+- Se um dia tiver uma **Página do Facebook** ligada ao Instagram, dá para usar um token que
+  nunca vence: variável `API_HOST` = `graph.facebook.com` e segredo `IG_USER_ID` =
+  `17841472104337280`.
