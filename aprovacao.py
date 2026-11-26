@@ -25,7 +25,9 @@ ESTADO = os.path.join(AQUI, "estado.json")
 
 
 def _cfg():
-    return os.environ.get("TELEGRAM_BOT_TOKEN", ""), os.environ.get("TELEGRAM_CHAT_ID", "")
+    tk = "".join(os.environ.get("TELEGRAM_BOT_TOKEN", "").split())   # tira espaços e quebras de linha coladas junto
+    chat = "".join(os.environ.get("TELEGRAM_CHAT_ID", "").split())
+    return tk, chat
 
 
 def ler_estado():

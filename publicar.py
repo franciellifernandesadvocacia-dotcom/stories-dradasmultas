@@ -266,7 +266,8 @@ def _http_real(metodo, url, params):
 # ----------------------------------------------------------------- avisos
 def avisar(msg):
     print("AVISO:", msg)
-    tk, chat = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID")
+    tk = "".join(os.environ.get("TELEGRAM_BOT_TOKEN", "").split())
+    chat = "".join(os.environ.get("TELEGRAM_CHAT_ID", "").split())
     if tk and chat:
         try:
             _http_real("POST", f"https://api.telegram.org/bot{tk}/sendMessage",
