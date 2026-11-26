@@ -44,7 +44,10 @@ jobs:
         run: |
           [ -z "$STORIES_POR_DIA" ] && unset STORIES_POR_DIA
           [ -z "$APROVACAO" ] && unset APROVACAO
-          if [ "${{ github.event.inputs.exemplo }}" = "true" ]; then EX=--exemplo; fi
+          if [ "${{ github.event.inputs.exemplo }}" = "true" ]; then EX=--exemplo
+          elif [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::notice::Chave do Claude (ANTHROPIC_API_KEY) ainda não configurada; nada gerado."; exit 0
+          fi
           python gerar_dia.py --para "${{ github.event.inputs.para || 'amanha' }}" $EX
 
       - name: Guardar no repositório

@@ -26,6 +26,9 @@ jobs:
           if [ "${{ vars.API_HOST }}" = "graph.facebook.com" ]; then
             echo "Token de usuário do sistema não vence; nada a renovar."; exit 0
           fi
+          if [ -z "$IG_TOKEN" ]; then
+            echo "::notice::IG_TOKEN ainda não configurado; nada a renovar."; exit 0
+          fi
           if [ -z "$GH_TOKEN" ]; then
             echo "::error::Falta o segredo PAT_SEGREDOS. Gere um token novo no app da Meta e troque o IG_TOKEN."
             exit 1
