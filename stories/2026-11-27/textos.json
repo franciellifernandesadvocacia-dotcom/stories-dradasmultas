@@ -1,0 +1,89 @@
+{
+ "tema": "multas irregulares",
+ "stories": [
+  {
+   "tipo": "bom_dia",
+   "titulo": "Boa sexta",
+   "texto": "Bom dia! A sexta chegou. Hoje o papo é sobre multa irregular: quando ela pode ter erro e como dá pra perceber.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cafe",
+   "assunto": "abertura sexta multas irregulares",
+   "noticia": 0,
+   "link": ""
+  },
+  {
+   "tipo": "pergunta",
+   "titulo": "Você já leu sua notificação inteira?",
+   "texto": "Muita gente só olha o valor e paga. Mas a notificação traz detalhes que mostram se a multa foi feita do jeito certo. Vamos ver quais?",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cor:bordo",
+   "assunto": "pergunta sobre ler notificação",
+   "noticia": 0,
+   "link": ""
+  },
+  {
+   "tipo": "multa_irregular",
+   "titulo": "Primeiro: o que o auto de infração precisa ter",
+   "texto": "Pelo art. 280 do CTB: tipo da infração; local, data e hora; placa, marca e espécie do veículo; e o órgão e o agente que autuaram.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "notebook-mesa",
+   "assunto": "dados obrigatórios do auto",
+   "noticia": 0,
+   "link": ""
+  },
+  {
+   "tipo": "multa_irregular",
+   "titulo": "E se tiver dado errado ou faltando?",
+   "texto": "Aí a multa pode ser irregular. Placa trocada, local que não bate, agente sem identificação: esse tipo de falha pode ser apontado na defesa.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cor:papel",
+   "assunto": "erros que tornam multa irregular",
+   "noticia": 0,
+   "link": ""
+  },
+  {
+   "tipo": "dica",
+   "titulo": "Agora, a parte que pouca gente sabe:",
+   "texto": "A notificação de autuação tem que ser expedida em até 30 dias da infração. Se sair depois disso, o auto deve ser arquivado (art. 281).",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "digitando",
+   "assunto": "prazo de 30 dias notificação",
+   "noticia": 0,
+   "link": ""
+  },
+  {
+   "tipo": "multa_irregular",
+   "titulo": "E como funciona a defesa?",
+   "texto": "Primeiro vem a defesa prévia, com prazo escrito na notificação, de no mínimo 30 dias. Depois, recurso à JARI e, por fim, ao CETRAN.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "justica",
+   "assunto": "etapas defesa JARI CETRAN",
+   "noticia": 0,
+   "link": ""
+  },
+  {
+   "tipo": "dica",
+   "titulo": "Resumindo:",
+   "texto": "Leia a notificação inteira, confira os dados e a data de envio. E quem paga e recorre recebe o valor de volta se a multa for cancelada.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "dúvidas? manda no direct",
+   "fundo": "cor:escuro",
+   "assunto": "resumo conferir antes de pagar",
+   "noticia": 0,
+   "link": ""
+  }
+ ]
+}
