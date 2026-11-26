@@ -160,7 +160,7 @@ class TestAprovacao(Ambiente):
         self.assertEqual(tg.enviados[0][0], "sendMediaGroup")
         self.assertEqual(len(tg.enviados[0][2]), 7)
         self.assertIn("OK menos", tg.enviados[-1][1]["text"])
-        self.assertIn("tema: CNH suspensa", tg.enviados[-1][1]["text"])
+        self.assertIn("tema: " + G.EXEMPLO_TEMA, tg.enviados[-1][1]["text"])
         self.assertIn("link: https://example.com/noticia", tg.enviados[-1][1]["text"])
 
         ig = P.Instagram("TOKEN-TESTE", http=MetaFalsa(), espera=0)
