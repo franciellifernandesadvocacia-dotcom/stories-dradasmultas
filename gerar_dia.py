@@ -23,22 +23,19 @@ import publicar as P
 AQUI = os.path.dirname(os.path.abspath(__file__))
 HISTORICO = os.path.join(AQUI, "historico.json")
 MODELO = os.environ.get("MODELO", "claude-opus-5-5")
-TIPOS = ["bom_dia", "noticia", "cnh_suspensa", "cnh_cassada", "multa_irregular", "lei_seca", "dica", "pergunta"]
 DIAS_GUARDAR_IMAGENS = 21
-TEMAS = ["CNH suspensa", "CNH cassada", "multas irregulares", "Lei Seca"]
+PERFIL = arte_natural.PERFIL          # perfil.json: nome, temas, tipos, estilo e busca de notícias
+TIPOS = list(PERFIL["tipos"])
+TEMAS = PERFIL["temas"]
 
-REGRAS = """Você escreve os stories diários do Instagram @dradasmultas ("Doutora das Multas"), perfil
-profissional de direito de trânsito da advogada Dra. Francielli Fernandes, em Mato Grosso.
-
-Tom: natural, próximo, como alguém falando no celular. Frases curtas, português do Brasil, sem
-juridiquês. Nada de hashtags e nada de emojis (a fonte do servidor não desenha emojis).
+REGRAS = PERFIL["descricao"] + "\n\n" + PERFIL["tom"] + """
 
 Regras que nunca podem ser quebradas (Código de Ética e Provimento 205/2021 da OAB):
-- Conteúdo informativo. Nada de promessa ou garantia de resultado ("cancelamos sua multa", "100%").
+- Conteúdo informativo. Nada de promessa ou garantia de resultado ("garantimos", "100%").
 - Não falar de preço, desconto, "consulta grátis", nem pedir que contratem.
-- Nada sensacionalista. Em notícia de acidente, nunca citar nome de vítima ou foto; tratar com respeito.
+- Nada sensacionalista. Em notícia de acidente ou tragédia, nunca citar nome de vítima; tratar com respeito.
 - Não dar conselho para caso concreto; falar em termos gerais.
-- Regra de trânsito (prazos, valores, pontos, artigos) só pode ser afirmada se estiver na BASE DE
+- Regra jurídica (prazos, valores, requisitos, artigos) só pode ser afirmada se estiver na BASE DE
   CONHECIMENTO abaixo. Fato de notícia só pode vir da pesquisa de notícias. Na dúvida, não afirme.
 - Resumir notícias com as próprias palavras (nunca copiar trechos) e sempre dizer o veículo.
 - No máximo UM story do dia pode ter rodapé convidando: "dúvidas? manda no direct".
@@ -74,9 +71,7 @@ def pesquisar_noticias(cliente, hoje, ja_usadas):
     Devolve [{titulo, resumo, veiculo, data, link}] só com matérias que ele realmente leu."""
     pedido = (
         f"Hoje é {hoje:%d/%m/%Y}. Pesquise na web notícias publicadas nos últimos 3 dias (se houver "
-        "poucas, nos últimos 7) sobre trânsito no Brasil: multas, CNH suspensa ou cassada, Detran, Lei Seca, "
-        "radares, mudanças nas regras, fiscalização, acidentes, carros. Prefira Mato Grosso e notícias "
-        "nacionais relevantes, de veículos confiáveis. Evite estas já usadas: " + ("; ".join(ja_usadas[-40:]) or "nenhuma") +
+        "poucas, nos últimos 7) " + PERFIL["busca"] + " Evite estas já usadas: " + ("; ".join(ja_usadas[-40:]) or "nenhuma") +
         ".\n\nEscolha as 3 melhores e ABRA CADA UMA com a ferramenta web_fetch para ler a matéria inteira. "
         "Não resuma notícia que você não abriu.\n\nNo final, liste as notícias lidas, uma por linha, "
         "exatamente neste formato:\n"
@@ -139,10 +134,17 @@ def escrever_stories(cliente, hoje, noticias, quantos, hist):
     """Passo 2: o Claude escreve a sequência do dia em formato estruturado (JSON garantido)."""
     with open(os.path.join(AQUI, "conhecimento.md"), encoding="utf-8") as f:
         base = f.read()
-    fundos = ", ".join(arte_natural.FUNDOS) + ", cor:papel, cor:escuro, cor:bordo, cor:limao, cor:rosa"
+    fundos = ", ".join(arte_natural.opcoes_de_fundo())
     dia_semana = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"][hoje.weekday()]
     lista_noticias = "\n".join(f'{i}. {n["titulo"]} ({n["veiculo"]}, {n["data"]}): {n["resumo"]}'
                                 for i, n in enumerate(noticias, start=1)) or "nenhuma notícia hoje"
+    versos = ""
+    if PERFIL.get("versiculos"):
+        usados = hist.get("versiculos", [])[-15:]
+        livres = [v for v in PERFIL["versiculos"] if v["ref"] not in usados] or PERFIL["versiculos"]
+        versos = ("\nVERSÍCULO DO BOM DIA: no story 1, o texto é UM destes versículos, copiado exatamente como "
+                  "está, seguido da referência entre travessões (ex.: \"... — Salmos 23:1\"). Não invente nem "
+                  "altere versículos:\n" + "\n".join(f'- {v["texto"]} — {v["ref"]}' for v in livres) + "\n")
     pedido = f"""Escreva os {quantos} stories de {dia_semana}, {hoje:%d/%m/%Y}.
 
 Eles são UMA SEQUÊNCIA que a pessoa assiste em ordem, como uma conversa com começo, meio e fim.
@@ -150,29 +152,28 @@ Cada story tem que fazer sentido depois do anterior e puxar o próximo.
 
 1. Escolha o TEMA DO DIA entre: {", ".join(TEMAS)}. Prefira o que combina com a notícia escolhida
    e evite repetir os temas dos últimos dias: {", ".join(hist.get("temas", [])[-4:]) or "nenhum"}.
-2. Story 1, tipo "bom_dia": titulo "Bom dia" (ou "Boa {dia_semana}"); texto leve que já anuncia o
-   assunto de hoje (ex.: "hoje o papo é sobre..."), até 150 caracteres.
+2. Story 1, tipo "bom_dia": titulo "Bom dia" (ou "Boa {dia_semana}"); {PERFIL["bom_dia"]}.
 3. Stories 2 e 3, tipo "noticia": UMA notícia da lista abaixo, ligada ao tema, contada em
    DOIS stories seguidos (os dois com o mesmo número em "noticia" e a mesma "fonte" "Veículo · dd/mm"):
    - o primeiro conta o que aconteceu: titulo = manchete com suas palavras (até 70 caracteres);
      texto = resumo da matéria (até 220 caracteres); comentario vazio;
-   - o segundo explica o que isso muda para quem dirige: titulo curto (ex.: "E o que isso muda pra
+   - o segundo explica o que isso muda na vida das pessoas: titulo curto (ex.: "E o que isso muda pra
      você?"); texto até 200 caracteres; comentario = 1 frase que puxa o tema do dia (até 90).
    A pessoa não vai abrir link: o resumo tem que se bastar. Use só fatos do resumo da lista.
    Se não houver notícia adequada, faça um story "pergunta" que introduz o tema.
 4. Stories do meio: desenvolvem o tema em passos lógicos (o que é → por que acontece → quanto tempo
-   ou consequências → o que fazer), com tipo igual ao tema (cnh_suspensa, cnh_cassada,
-   multa_irregular, lei_seca) ou "dica"/"pergunta". Use ganchos de ligação no começo do título ou
+   ou consequências → o que fazer), com tipo igual ao tema ({PERFIL["tipos_do_tema"]})
+   ou "dica"/"pergunta". Use ganchos de ligação no começo do título ou
    do texto ("E se...?", "Agora, a parte que pouca gente sabe:", "Resumindo:").
 5. Último story: fecha a conversa com um resumo curto e rodape "dúvidas? manda no direct".
    Só o último tem rodape; nos outros, rodape vazio.
 Limites: titulo até 60 caracteres e texto até 170 (exceto bom_dia e notícia, acima).
 "fonte" e "comentario" vazios e "noticia" = 0 quando não for notícia.
-"fundo": escolha um destes: {fundos} (bom_dia: cafe ou outra foto; notícia: cor:papel ou cor:escuro;
-varie entre foto e cor ao longo da sequência).
+"fundo": escolha um destes: {fundos} ({PERFIL["fundos_dica"]}).
 "assunto": 3 a 6 palavras resumindo cada story. Não repita estes assuntos recentes:
 {"; ".join(hist.get("assuntos", [])[-40:]) or "nenhum"}.
 
+{versos}
 NOTÍCIAS PESQUISADAS HOJE:
 {lista_noticias}
 
@@ -206,6 +207,10 @@ EXEMPLO = [  # sequência de exemplo (modo --exemplo, sem Claude): um tema do co
     {"tipo": "cnh_cassada", "titulo": "Agora, o cuidado que muita gente não tem:", "texto": "Dirigir com a CNH suspensa leva à cassação. Aí são 2 anos de espera e habilitação do zero.", "fundo": "cor:bordo"},
     {"tipo": "dica", "titulo": "Resumindo", "texto": "Antes de qualquer suspensão existe processo e prazo de defesa. Por isso, notificação nunca se ignora.", "fundo": "cor:limao", "rodape": "dúvidas? manda no direct"},
 ]
+
+
+if PERFIL.get("exemplo"):
+    EXEMPLO_TEMA, EXEMPLO = PERFIL["exemplo"]["tema"], PERFIL["exemplo"]["stories"]
 
 
 def horarios(n):
@@ -325,6 +330,9 @@ def gerar(dia, exemplo=False):
     acrescentar_fila(linhas)
     hist["dias"].append(dia.isoformat())
     hist["temas"].append(tema)
+    for v in PERFIL.get("versiculos", []):
+        if stories and v["ref"] in stories[0].get("texto", ""):
+            hist.setdefault("versiculos", []).append(v["ref"])
     hist = {k: v[-120:] for k, v in hist.items()}
     with open(HISTORICO, "w", encoding="utf-8") as f:
         json.dump(hist, f, ensure_ascii=False, indent=1)

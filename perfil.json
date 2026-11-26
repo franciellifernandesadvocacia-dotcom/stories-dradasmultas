@@ -1,0 +1,35 @@
+{
+ "nome": "Doutora das Multas",
+ "handle": "@dradasmultas",
+ "estilo": "natural",
+ "descricao": "Você escreve os stories diários do Instagram @dradasmultas (\"Doutora das Multas\"), perfil\nprofissional de direito de trânsito da advogada Dra. Francielli Fernandes, em Mato Grosso.",
+ "tom": "Tom: natural, próximo, como alguém falando no celular. Frases curtas, português do Brasil, sem\njuridiquês. Nada de hashtags e nada de emojis (a fonte do servidor não desenha emojis).",
+ "area": "trânsito",
+ "temas": [
+  "CNH suspensa",
+  "CNH cassada",
+  "multas irregulares",
+  "Lei Seca"
+ ],
+ "tipos": {
+  "bom_dia": "",
+  "noticia": "NOTÍCIA",
+  "cnh_suspensa": "CNH SUSPENSA",
+  "cnh_cassada": "CNH CASSADA",
+  "multa_irregular": "MULTA IRREGULAR",
+  "lei_seca": "LEI SECA",
+  "dica": "",
+  "pergunta": "PERGUNTA"
+ },
+ "tipos_do_tema": "cnh_suspensa, cnh_cassada, multa_irregular, lei_seca",
+ "busca": "sobre trânsito no Brasil: multas, CNH suspensa ou cassada, Detran, Lei Seca, radares, mudanças nas regras, fiscalização, acidentes, carros. Prefira Mato Grosso e notícias nacionais relevantes, de veículos confiáveis.",
+ "bom_dia": "texto leve que já anuncia o assunto de hoje (ex.: \"hoje o papo é sobre...\"), até 150 caracteres",
+ "fundos_dica": "bom_dia: cafe ou outra foto; notícia: cor:papel ou cor:escuro; varie entre foto e cor ao longo da sequência",
+ "cores": [
+  "papel",
+  "escuro",
+  "bordo",
+  "limao",
+  "rosa"
+ ]
+}

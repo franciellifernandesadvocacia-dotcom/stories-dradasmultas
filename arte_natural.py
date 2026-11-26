@@ -1,6 +1,7 @@
 """Desenha stories com cara de feitos no celular: foto de fundo ou cor lisa e texto em
 'etiquetas' (o fundo arredondado atrás de cada linha, como o texto do próprio Instagram).
 Só usa fontes livres (pasta fontes/) e fotos do Unsplash (pasta fundos/)."""
+import json
 import os
 import random
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageOps
@@ -9,15 +10,46 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 W, H = 1080, 1920
 TOPO_SEGURO, BASE_SEGURA = 300, 1600   # o Instagram cobre o topo (barra/perfil) e a base (responder)
 
+with open(os.path.join(AQUI, "perfil.json"), encoding="utf-8") as _f:
+    PERFIL = json.load(_f)
+
 CORES = {
     "papel": (231, 224, 213), "escuro": (22, 21, 21), "bordo": (117, 33, 51),
     "limao": (178, 176, 14), "oliva": (63, 75, 15), "rosa": (224, 116, 132), "creme": (246, 241, 233),
 }
-FUNDOS = sorted(f[:-4] for f in os.listdir(os.path.join(AQUI, "fundos")) if f.endswith(".jpg"))
-ROTULOS = {
-    "bom_dia": "", "noticia": "NOTÍCIA", "cnh_suspensa": "CNH SUSPENSA", "cnh_cassada": "CNH CASSADA",
-    "multa_irregular": "MULTA IRREGULAR", "lei_seca": "LEI SECA", "pergunta": "PERGUNTA",
-}
+CORES.update({k: tuple(v) for k, v in PERFIL.get("paleta", {}).items()})
+PASTAS_FOTOS = [os.path.join(AQUI, "fundos"), os.path.join(AQUI, "fotos")]   # fotos/ = fotos pessoais (cifradas no GitHub)
+
+
+def _arquivos_de_fotos():
+    achados = {}
+    for pasta in PASTAS_FOTOS:
+        if os.path.isdir(pasta):
+            for f in os.listdir(pasta):
+                if f.lower().endswith((".jpg", ".jpeg", ".png")):
+                    achados[os.path.splitext(f)[0]] = os.path.join(pasta, f)
+    return achados
+
+
+FUNDOS = sorted(_arquivos_de_fotos())
+ROTULOS = PERFIL["tipos"]
+
+
+def opcoes_de_fundo():
+    """O que o Claude pode escolher em "fundo": categorias de foto (ex.: cafe) e cores lisas."""
+    if PERFIL.get("categorias_fotos"):
+        cats = list(PERFIL["categorias_fotos"])
+    else:
+        cats = FUNDOS
+    return cats + ["cor:" + c for c in PERFIL.get("cores", [])]
+
+
+def escolher_foto(nome):
+    fotos = _arquivos_de_fotos()
+    if nome in fotos:
+        return fotos[nome]
+    candidatas = [c for n, c in fotos.items() if n.startswith(nome + "-") or n.startswith(nome + "_")]
+    return random.choice(candidatas or list(fotos.values()))
 
 
 def fonte(tam, peso="Bold"):
@@ -51,8 +83,7 @@ def fundo(nome):
         img = Image.new("RGB", (W, H), cor)
         ruido = Image.effect_noise((W, H), 18).convert("L").point(lambda v: 128 + (v - 128) // 6)
         return Image.blend(img, Image.merge("RGB", [ruido] * 3), 0.06), cor
-    nome = nome if nome in FUNDOS else random.choice(FUNDOS)
-    ft = Image.open(os.path.join(AQUI, "fundos", nome + ".jpg")).convert("RGB")
+    ft = ImageOps.exif_transpose(Image.open(escolher_foto(nome or ""))).convert("RGB")
     ft = ImageOps.fit(ft, (W, H), centering=(0.5, 0.5))
     ft = ImageEnhance.Brightness(ft).enhance(0.62)
     return ft, None
@@ -82,6 +113,9 @@ def contraste(cor):
 
 def desenhar(story, caminho):
     """story: dict com tipo, titulo, texto, fonte (opcional), fundo (nome da foto ou 'cor:xxx')."""
+    if PERFIL.get("estilo") == "sobrio":
+        import arte_sobria
+        return arte_sobria.desenhar(story, caminho)
     tipo = story.get("tipo", "dica")
     img, cor_lisa = fundo(story.get("fundo", ""))
     d = ImageDraw.Draw(img)
