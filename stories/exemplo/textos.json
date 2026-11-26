@@ -1,0 +1,53 @@
+{
+ "tema": "CNH suspensa",
+ "stories": [
+  {
+   "tipo": "bom_dia",
+   "titulo": "Bom dia",
+   "texto": "Hoje o papo é sobre uma dúvida que chega muito aqui: o que acontece quando a CNH é suspensa?",
+   "fundo": "cafe"
+  },
+  {
+   "tipo": "noticia",
+   "titulo": "(EXEMPLO) Detran amplia fiscalização no fim de semana",
+   "texto": "Notícia de exemplo, só para testar o robô sem chamar o Claude. Aqui entra o resumo da matéria lida pelo robô: o que aconteceu, onde e quando.",
+   "fonte": "Exemplo · 01/12",
+   "fundo": "cor:papel",
+   "link": "https://example.com/noticia"
+  },
+  {
+   "tipo": "noticia",
+   "titulo": "E o que isso muda pra você?",
+   "texto": "Aqui entra a explicação do que a notícia muda para quem dirige, também com base na matéria.",
+   "fonte": "Exemplo · 01/12",
+   "comentario": "E fiscalização maior costuma significar mais processos de suspensão.",
+   "fundo": "cor:escuro",
+   "link": "https://example.com/noticia"
+  },
+  {
+   "tipo": "cnh_suspensa",
+   "titulo": "Primeiro: suspensa não é perdida",
+   "texto": "Você fica um tempo sem poder dirigir, faz a reciclagem e volta. Quem perde a CNH é quem tem ela cassada.",
+   "fundo": "carro-por-dentro"
+  },
+  {
+   "tipo": "cnh_suspensa",
+   "titulo": "E por que ela é suspensa?",
+   "texto": "Por pontos (20, 30 ou 40 em 12 meses, conforme as gravíssimas) ou por uma infração só, como Lei Seca ou racha.",
+   "fundo": "cor:escuro"
+  },
+  {
+   "tipo": "cnh_cassada",
+   "titulo": "Agora, o cuidado que muita gente não tem:",
+   "texto": "Dirigir com a CNH suspensa leva à cassação. Aí são 2 anos de espera e habilitação do zero.",
+   "fundo": "cor:bordo"
+  },
+  {
+   "tipo": "dica",
+   "titulo": "Resumindo",
+   "texto": "Antes de qualquer suspensão existe processo e prazo de defesa. Por isso, notificação nunca se ignora.",
+   "fundo": "cor:limao",
+   "rodape": "dúvidas? manda no direct"
+  }
+ ]
+}
