@@ -211,5 +211,55 @@ class TestAprovacao(Ambiente):
         self.assertTrue(all(i["status"] == "aguardando" for i in P.ler_fila()[0]))
 
 
+class TestFotoEnviada(Ambiente):
+    def _foto(self, caminho):
+        from PIL import Image
+        Image.new("RGB", (1200, 1600), (120, 90, 70)).save(caminho)
+        return caminho
+
+    def test_foto_com_instrucoes_vira_story(self):
+        import foto_story as F
+        with open(P.FILA, "w", encoding="utf-8") as f:
+            f.write("arquivo,data,hora,status,lote\n")
+        A.salvar_estado({"offset": 0, "ultimo_lote": "", "lembrete": ""})
+        os.environ.pop("ANTHROPIC_API_KEY", None)
+        msg = {"chat": {"id": 42}, "photo": [{"file_id": "p1"}, {"file_id": "p2"}],
+               "caption": '"segunda começando com café" sem sombra, texto em cima, às 18h'}
+        enviados = []
+
+        def tg(metodo, campos=None, arquivos=None):
+            enviados.append((metodo, campos, arquivos))
+            if metodo == "getUpdates":
+                return {"result": [{"update_id": 5, "message": msg}]}
+            return {"ok": True}
+        agora = self.agora("2026-12-01 09:10")
+        antigo = F.processar
+        F.processar = lambda m, c, t: antigo(m, c, t, agora=agora, _baixar=lambda fid, dest, _t: self._foto(dest))
+        try:
+            A.ler_respostas(_tg=tg)
+        finally:
+            F.processar = antigo
+        itens = P.ler_fila()[0]
+        self.assertEqual(len(itens), 1)
+        self.assertEqual(itens[0]["quando"].strftime("%Y-%m-%d %H:%M"), "2026-12-01 18:00")
+        self.assertEqual(itens[0]["status"], "aprovado")
+        self.assertEqual(P.conferir_imagem(itens[0]["arquivo"]), [])
+        self.assertFalse(any("original" in f for f in os.listdir(os.path.join(P.PASTA_STORIES, "2026-12-01"))))
+        self.assertTrue(any(m == "sendPhoto" and "18:00" in c["caption"] for m, c, a in enviados))
+        # cancelar
+        A.ler_respostas(_tg=lambda m, c=None, a=None: {"result": [{"update_id": 6, "message": {"chat": {"id": 42}, "text": "cancelar"}}]} if m == "getUpdates" else {"ok": True})
+        self.assertEqual(P.ler_fila()[0][0]["status"], "tirado")
+
+    def test_instrucoes_simples(self):
+        import foto_story as F
+        o = F.interpretar_simples('"treino feito" mais escuro com faixa agora')
+        self.assertEqual((o["texto"], o["exposicao"], o["faixa"], o["quando"]), ("treino feito", 0.45, True, "agora"))
+        self.assertTrue(F.interpretar_simples("sem texto")["sem_texto"])
+        agora = self.agora("2026-12-01 09:10")
+        self.assertEqual(F.horario("agora", agora, []), agora + dt.timedelta(minutes=5))
+        livre = F.horario("", agora, [self.agora("2026-12-01 10:00")])
+        self.assertEqual(livre.strftime("%H:%M"), "11:00")
+
+
 if __name__ == "__main__":
     unittest.main()
