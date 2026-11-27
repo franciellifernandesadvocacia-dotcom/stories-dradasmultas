@@ -196,6 +196,32 @@ class TestAprovacao(Ambiente):
         self.assertEqual(status.count("tirado"), 1)
         self.assertEqual(status.count("aprovado"), 6)
 
+    def test_liga_e_desliga_pelo_telegram(self):
+        self.assertEqual(A.comando_modo("Só fotos hoje"), "hoje")
+        self.assertEqual(A.comando_modo("SÓ FOTOS"), "desligar")
+        self.assertEqual(A.comando_modo("desliga o automático"), "desligar")
+        self.assertEqual(A.comando_modo("Você comanda"), "ligar")
+        self.assertIsNone(A.comando_modo("ok menos 3"))
+        os.environ["APROVACAO"] = "automatica"
+        G.gerar(DIA, exemplo=True)
+        status = lambda: [i["status"] for i in P.ler_fila()[0]]
+        # hoje = 01/12 às 12:00: os 3 primeiros já passaram; só os da tarde pausam
+        tg = TelegramFalso(["só fotos hoje"])
+        A.ler_respostas(_tg=tg, agora=self.agora("2026-12-01 12:00"))
+        self.assertEqual(status().count("pausado"), 4)
+        self.assertIn("hoje só saem as fotos", tg.enviados[-1][1]["text"])
+        A.ler_respostas(_tg=TelegramFalso(["você comanda"]), agora=self.agora("2026-12-01 13:00"))
+        self.assertEqual(status().count("aprovado"), 7)
+        # desligado de vez: pausa tudo que falta e o gerador não cria o dia seguinte
+        A.ler_respostas(_tg=TelegramFalso(["SÓ FOTOS"]), agora=self.agora("2026-11-30 20:00"))
+        self.assertEqual(status().count("pausado"), 7)
+        self.assertEqual(A.ler_estado()["modo"], "so_fotos")
+        G.gerar(DIA + dt.timedelta(days=1), exemplo=True)
+        self.assertFalse(any(i["arquivo"].startswith("2026-12-02") for i in P.ler_fila()[0]))
+        A.ler_respostas(_tg=TelegramFalso(["Você comanda"]), agora=self.agora("2026-11-30 20:30"))
+        G.gerar(DIA + dt.timedelta(days=1), exemplo=True)
+        self.assertTrue(any(i["arquivo"].startswith("2026-12-02") for i in P.ler_fila()[0]))
+
     def test_resposta_de_outra_pessoa_e_ignorada(self):
         G.gerar(DIA, exemplo=True)
         A.salvar_estado({"offset": 0, "ultimo_lote": "2026-12-01", "lembrete": ""})
@@ -249,6 +275,40 @@ class TestFotoEnviada(Ambiente):
         # cancelar
         A.ler_respostas(_tg=lambda m, c=None, a=None: {"result": [{"update_id": 6, "message": {"chat": {"id": 42}, "text": "cancelar"}}]} if m == "getUpdates" else {"ok": True})
         self.assertEqual(P.ler_fila()[0][0]["status"], "tirado")
+
+    def test_album_vira_colagem(self):
+        import foto_story as F
+        from PIL import Image
+        with open(P.FILA, "w", encoding="utf-8") as f:
+            f.write("arquivo,data,hora,status,lote\n")
+        A.salvar_estado({"offset": 0, "ultimo_lote": "", "lembrete": ""})
+        os.environ.pop("ANTHROPIC_API_KEY", None)
+        msgs = [{"chat": {"id": 42}, "media_group_id": "g1", "photo": [{"file_id": f"f{i}"}],
+                 **({"caption": '"rotina de hoje"'} if i == 0 else {})} for i in range(3)]
+        baixadas = []
+
+        def baixar(fid, dest, _t):
+            Image.new("RGB", (900, 1200), (60 + 40 * len(baixadas), 80, 90)).save(dest)
+            baixadas.append(fid)
+            return dest
+        agora = self.agora("2026-12-01 09:10")
+        antigo = F.processar
+        F.processar = lambda m, c, t: antigo(m, c, t, agora=agora, _baixar=baixar)
+        enviados = []
+
+        def tg(metodo, campos=None, arquivos=None):
+            enviados.append(metodo)
+            if metodo == "getUpdates":
+                return {"result": [{"update_id": 10 + i, "message": m} for i, m in enumerate(msgs)]}
+            return {"ok": True}
+        try:
+            A.ler_respostas(_tg=tg)
+        finally:
+            F.processar = antigo
+        itens = P.ler_fila()[0]
+        self.assertEqual(len(itens), 1)                 # 3 fotos = 1 colagem
+        self.assertEqual(len(baixadas), 3)
+        self.assertEqual(P.conferir_imagem(itens[0]["arquivo"]), [])
 
     def test_instrucoes_simples(self):
         import foto_story as F
