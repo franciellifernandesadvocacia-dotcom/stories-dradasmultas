@@ -1,5 +1,7 @@
 {
- "noticias": [],
+ "noticias": [
+  "Bêbado, na contramão e com a CNH suspensa no Paraná"
+ ],
  "assuntos": [
   "abertura sexta multas irregulares",
   "pergunta sobre ler notificação",
@@ -14,16 +16,32 @@
   "recusa ao teste do bafômetro",
   "reincidência, cassação e crime",
   "como voltar após suspensão",
-  "resumo do sábado Lei Seca"
+  "resumo do sábado Lei Seca",
+  "abertura sábado CNH cassada",
+  "flagra em Cascavel contramão",
+  "dirigir suspenso leva à cassação",
+  "suspensa ou cassada diferença",
+  "três hipóteses de cassação",
+  "dois anos e processo novo",
+  "resumo do sábado CNH cassada"
  ],
  "dias": [
-  "2026-11-27"
+  "2026-11-27",
+  "2026-11-28"
  ],
  "temas": [
   "multas irregulares",
-  "Lei Seca"
+  "Lei Seca",
+  "CNH cassada"
  ],
- "links": [],
+ "links": [
+  {
+   "dia": "2026-11-28",
+   "titulo": "Bêbado, na contramão e com a CNH suspensa no Paraná",
+   "fonte": "Catve.com · 27/11",
+   "link": "https://catve.com/noticia/9/488966/motorista-embriagado-e-com-cnh-suspensa-e-flagrado-na-contramao-em-cascavel"
+  }
+ ],
  "fotos": [
   "cafe",
   "notebook-mesa",
@@ -32,6 +50,9 @@
   "cafe",
   "blitz-noite",
   "lei-seca-chave-e-copo",
-  "chave-do-carro"
+  "chave-do-carro",
+  "cafe",
+  "chave-do-carro",
+  "carro-por-dentro"
  ]
 }
