@@ -49,6 +49,66 @@ def foto_escura(nome, forca=0.6):
     return ImageEnhance.Brightness(ft).enhance(A.PERFIL.get("exposicao", forca))
 
 
+def foto_natural(nome):
+    """Foto em tela cheia SEM escurecer (só escurece depois, se o texto precisar)."""
+    if nome and nome.startswith("cor:"):
+        return Image.new("RGB", (W, H), (0, 0, 0))
+    ft = ImageOps.exif_transpose(Image.open(A.escolher_foto(nome or ""))).convert("RGB")
+    return ImageOps.fit(ft, (W, H), centering=(0.5, 0.4))
+
+
+_CASCATAS = []
+
+
+def rostos(img):
+    """Caixas (x0, y0, x1, y1) dos rostos na foto, com folga para cabelo e queixo. Sem OpenCV: lista vazia."""
+    try:
+        import cv2
+        import numpy as np
+    except ImportError:
+        return []
+    if not _CASCATAS:
+        for nome in ("haarcascade_frontalface_default.xml", "haarcascade_profileface.xml"):
+            _CASCATAS.append(cv2.CascadeClassifier(cv2.data.haarcascades + nome))
+    esc = 540 / img.width
+    peq = img.convert("L").resize((540, int(img.height * esc)))
+    g = cv2.equalizeHist(np.array(peq))
+    caixas = []
+    for c in _CASCATAS:
+        for (x, y, w, h) in c.detectMultiScale(g, 1.1, 6, minSize=(36, 36)):
+            x, y, w, h = [v / esc for v in (x, y, w, h)]
+            caixas.append((x - 0.35 * w, y - 0.45 * h, x + 1.35 * w, y + 1.45 * h))
+    return caixas
+
+
+def _cruza(caixa, rosto):
+    return not (caixa[2] <= rosto[0] or caixa[0] >= rosto[2] or caixa[3] <= rosto[1] or caixa[1] >= rosto[3])
+
+
+def livre(caixa, faces):
+    return not any(_cruza(caixa, f) for f in faces)
+
+
+def escurecer(img, caixas, alvo=110):
+    """Diminui a exposição da foto inteira SÓ se o lugar do texto estiver claro demais (nada de escurecer à toa)."""
+    k = min([fator_contraste(img, c, alvo) for c in caixas] or [1.0])
+    if k < 0.999:
+        img.paste(ImageEnhance.Brightness(img).enhance(k))
+
+
+def escolher_y(img, alt, preferido, faces, x0=60, x1=W - 60):
+    """Mantém a posição do layout se ela não cobre rosto; senão procura o lugar livre mais escuro."""
+    if livre((x0, preferido, x1, preferido + alt), faces):
+        return preferido
+    todos = list(range(A.TOPO_SEGURO + 20, max(A.TOPO_SEGURO + 21, A.BASE_SEGURA - 110 - alt), 20))
+    cands = [y for y in todos if livre((x0, y, x1, y + alt), faces)]
+    if not cands:                                  # sem espaço totalmente livre: o que menos cobre o rosto
+        def cobre(y):
+            return sum(max(0, min(y + alt, f[3]) - max(y, f[1])) * max(0, min(x1, f[2]) - max(x0, f[0])) for f in faces)
+        return min(todos or [preferido], key=lambda y: (cobre(y), abs(y - preferido)))
+    return min(cands, key=lambda y: _luz(img, (x0, y, x1, y + alt))[0] + abs(y - preferido) * 0.02)
+
+
 def texto_com_sombra(img, linhas, y, f, cor=BRANCO, entre=1.18, sombra=0.75, alinh="c", x=90):
     """Escreve linhas com uma sombra preta difusa atrás (a 'sombra preta'). alinh: c (centro) ou l (esquerda)."""
     asc, desc = f.getmetrics()
@@ -97,37 +157,59 @@ def marca(img, x=None, y=None):
         img.paste(lg, (x, y), lg)
 
 
+def _dominio(link):
+    import urllib.parse
+    h = urllib.parse.urlparse(link or "").netloc.lower()
+    return h[4:] if h.startswith("www.") else h
+
+
 def cartao_noticia(img, story, rot):
-    """Notícia com cara de notícia: cartão branco de matéria, como um link compartilhado no story."""
+    """Notícia com cara de notícia: um cartão de matéria como link compartilhado, com o jornal no topo
+    (nome e site), manchete, resumo e a linha de fonte embaixo."""
     cinza, preto = (110, 106, 102), (20, 19, 18)
-    f_fonte, f_man, f_res = fonte("rotulo", 30), fonte("titulo", 64), fonte("texto", 40)
-    larg = 820
+    veic, _, data = (story.get("fonte") or "Notícia").partition("·")
+    veic, data = veic.strip(), data.strip()
+    site = _dominio(story.get("link"))
+    f_veic, f_site = fonte("rotulo", 36), fonte("texto", 28)
+    f_man, f_res, f_pe = fonte("titulo", 62), fonte("texto", 39), fonte("texto", 27)
+    x0, x1, pad = 70, W - 70, 50
+    larg = x1 - x0 - 2 * pad
     ml = A.quebrar(story["titulo"], f_man, larg)
     rl = A.quebrar(story["texto"], f_res, larg)
-    veic, _, data = (story.get("fonte") or "Notícia").partition("·")
-    alt = 70 + 40 + len(ml) * 76 + 30 + len(rl) * 54 + 90
-    y0 = max(A.TOPO_SEGURO + 90, (H - alt) // 2 - 80)
+    topo = 124                                    # faixa escura com o nome do jornal
+    alt = topo + 44 + len(ml) * 74 + 24 + len(rl) * 53 + 40 + 70
+    y0 = max(A.TOPO_SEGURO + 90, (H - alt) // 2 - 60)
+    escurecer(img, [(60, y0 - 110, 760, y0 - 20)])
     sombra = Image.new("L", (W, H), 0)
-    ImageDraw.Draw(sombra).rounded_rectangle((70, y0 + 14, W - 70, y0 + alt + 14), 30, fill=170)
+    ImageDraw.Draw(sombra).rounded_rectangle((x0, y0 + 14, x1, y0 + alt + 14), 28, fill=170)
     img.paste(Image.new("RGB", (W, H), (0, 0, 0)), (0, 0), sombra.filter(ImageFilter.GaussianBlur(24)))
     d = ImageDraw.Draw(img)
-    d.rounded_rectangle((70, y0, W - 70, y0 + alt), 30, fill=(255, 255, 255))
-    d.text((120, y0 + 50), espacado(veic.strip())[:40], font=f_fonte, fill=cinza)
-    if data.strip():
-        d.text((W - 120, y0 + 50), data.strip(), font=f_fonte, fill=cinza, anchor="ra")
-    y = y0 + 120
-    d.line([(120, y - 22), (W - 120, y - 22)], fill=(225, 222, 218), width=2)
+    d.rounded_rectangle((x0, y0, x1, y0 + alt), 28, fill=(255, 255, 255))
+    d.rounded_rectangle((x0, y0, x1, y0 + topo), 28, fill=(28, 27, 26))
+    d.rectangle((x0, y0 + topo - 30, x1, y0 + topo), fill=(28, 27, 26))
+    d.text((x0 + pad, y0 + 30), veic.upper()[:34], font=f_veic, fill=(255, 255, 255))
+    if site:
+        d.text((x0 + pad, y0 + 78), site, font=f_site, fill=(190, 186, 180))
+    if data:
+        d.text((x1 - pad, y0 + 34), data, font=f_site, fill=(190, 186, 180), anchor="ra")
+    y = y0 + topo + 44
     for ln in ml:
-        d.text((120, y), ln, font=f_man, fill=preto)
-        y += 76
-    y += 26
+        d.text((x0 + pad, y), ln, font=f_man, fill=preto)
+        y += 74
+    y += 24
     for ln in rl:
-        d.text((120, y), ln, font=f_res, fill=(70, 68, 66))
-        y += 54
+        d.text((x0 + pad, y), ln, font=f_res, fill=(70, 68, 66))
+        y += 53
+    y += 24
+    d.line([(x0 + pad, y), (x1 - pad, y)], fill=(225, 222, 218), width=2)
+    pe = "Fonte: " + veic + (f" · {site}" if site else "") + (f" · {data}" if data else "")
+    d.text((x0 + pad, y + 22), pe, font=f_pe, fill=cinza)
+    # sempre deixa claro que é notícia; caso real e jurisprudência ganham a etiqueta ao lado
+    f_nd = fonte("detalhe", 40)
+    texto_com_sombra(img, ["Notícia do dia"], y0 - 86, f_nd, BRANCO, alinh="l", x=92)
     if rot and rot.upper() not in ("NOTÍCIA",):
-        faixas(img, [rot.upper()], y0 - 80, fonte("rotulo", 32), BRANCO, (0, 0, 0, 170), alinh="l", x=92)
-    else:
-        texto_com_sombra(img, ["Notícia do dia"], y0 - 86, fonte("detalhe", 40), BRANCO, alinh="l", x=92)
+        faixas(img, [rot.upper()], y0 - 80, fonte("rotulo", 28), BRANCO, (0, 0, 0, 170), alinh="l",
+               x=92 + int(f_nd.getlength("Notícia do dia")) + 40)
 
 
 def italico(texto, f, cor, largura):
@@ -153,6 +235,8 @@ def bom_dia_cartao(img, story):
     bloco = italico("“" + texto + "”", fonte("texto", 42), (80, 78, 76), larg - 40)
     alt_card = bloco.height + 50
     y = int(H * 0.36)
+    escurecer(img, [(x0 - 20, y - 20, x0 + larg, y + 60), (x0, y + 64 + alt_card, x0 + larg + 20, y + 140 + alt_card),
+                    (W / 2 - 300, H * 0.68 - 10, W / 2 + 300, H * 0.68 + 100)])
     d = ImageDraw.Draw(img)
     d.text((x0, y), (story.get("titulo") or "bom dia").lower(), font=maquina(38), fill=BRANCO)
     y += 64
@@ -216,14 +300,18 @@ def texto_colagem(img, texto, fileiras, alt, gap=8):
     img.paste(cam, (x0, ultima_y), cam)
 
 
-def diario(img, story):
-    """Modelo 'diário': máquina de escrever no alto à esquerda, barrinha, e frase em negrito centralizada."""
+def diario(img, story, faces=()):
+    """Modelo 'diário': máquina de escrever no alto à esquerda, barrinha, e frase em negrito centralizada.
+    Se o rosto estiver no alto, o bloco desce para baixo."""
     f1, f2 = maquina(44), maquina(38)
-    y = A.TOPO_SEGURO + 60
+    alt = len(A.quebrar(story["titulo"], f1, 760)) * 66 + (150 + len(A.quebrar(story.get("texto", ""), f2, 760)) * 60 if story.get("texto") else 0)
+    y = escolher_y(img, alt, A.TOPO_SEGURO + 60, faces, 60, 880)
+    escurecer(img, [(60, y - 20, 880, y + alt + 20)])
     y = texto_com_sombra(img, A.quebrar(story["titulo"], f1, 760), y, f1, BRANCO, entre=1.25, sombra=0.55, alinh="l", x=92)
-    d = ImageDraw.Draw(img)
-    d.line([(96, y + 30), (96, y + 110)], fill=BRANCO, width=3)
-    y = texto_com_sombra(img, A.quebrar(story["texto"], f2, 760), y + 150, f2, BRANCO, entre=1.3, sombra=0.55, alinh="l", x=92)
+    if story.get("texto"):                    # sem segundo texto, não desenha a barrinha
+        d = ImageDraw.Draw(img)
+        d.line([(96, y + 30), (96, y + 110)], fill=BRANCO, width=3)
+        y = texto_com_sombra(img, A.quebrar(story["texto"], f2, 760), y + 150, f2, BRANCO, entre=1.3, sombra=0.55, alinh="l", x=92)
     frase = story.get("comentario") or story.get("rodape") or ""
     if frase:
         fb = fonte("titulo", 46)
@@ -231,6 +319,8 @@ def diario(img, story):
 
 
 def _layout(story, indice):
+    if story.get("tipo") == "pessoal" and story.get("layout") not in LAYOUTS:
+        return "diario" if indice % 2 else "base_esq"     # story pessoal: máquina de escrever ou texto solto
     if story.get("layout") in LAYOUTS:
         return story["layout"]
     return LAYOUTS[(indice + len(story.get("titulo", ""))) % len(LAYOUTS)]
@@ -241,7 +331,8 @@ CONTADOR = [0]
 
 def desenhar(story, caminho):
     tipo = story.get("tipo", "dica")
-    img = foto_escura(story.get("fundo", ""))
+    img = foto_natural(story.get("fundo", ""))
+    faces = rostos(img)
     CONTADOR[0] += 1
     rot = story.get("rotulo") or A.ROTULOS.get(tipo, "")
     tipos_noticia = ("noticia", "caso_real", "jurisprudencia")
@@ -255,14 +346,15 @@ def desenhar(story, caminho):
         if " — " in texto:
             texto, ref = texto.rsplit(" — ", 1)
         f_bd, f_v = fonte("titulo", 74), fonte("texto", 54)
-        texto_com_sombra(img, [story.get("titulo") or "Bom dia"], A.TOPO_SEGURO + 80, f_bd, BRANCO, alinh="l", x=92)
         vl = A.quebrar("“" + texto + "”", f_v, 860)
         y = int(H * 0.56 - len(vl) * 34)
+        escurecer(img, [(60, A.TOPO_SEGURO + 60, 900, A.TOPO_SEGURO + 180), (60, y - 20, W - 60, y + len(vl) * 76 + 80)])
+        texto_com_sombra(img, [story.get("titulo") or "Bom dia"], A.TOPO_SEGURO + 80, f_bd, BRANCO, alinh="l", x=92)
         y = texto_com_sombra(img, vl, y, f_v, BRANCO)
         if ref:
             texto_com_sombra(img, [ref], y + 24, fonte("detalhe", 38), DOURADO, sombra=0.6)
     elif _layout(story, CONTADOR[0]) == "diario":
-        diario(img, story)
+        diario(img, story, faces)
     elif _layout(story, CONTADOR[0]) == "colagem":
         fotos = [A.escolher_foto(story.get("fundo", "")) for _ in range(5)]
         img, fil, alt = grade(fotos)
@@ -284,6 +376,9 @@ def desenhar(story, caminho):
             y = int(H * 0.36)
         else:
             y = int(H * 0.55 - alt / 2)
+        y = escolher_y(img, alt, y, faces)                 # nunca em cima do rosto quando há espaço livre
+        if lay != "faixa":
+            escurecer(img, [(60, y - 20, W - 60, y + alt + 20)])
         al = "l" if esq else "c"
         if rot:
             texto_com_sombra(img, [rot], y, fonte("rotulo", 30), DOURADO, sombra=0.6, alinh=al, x=92)
@@ -330,8 +425,11 @@ def _luz(img, caixa):
 
 
 def melhor_y(img, alt, x0=60, x1=W - 60):
-    """Procura a faixa da foto mais escura e mais lisa para o texto branco ficar visível."""
+    """Procura a faixa da foto mais escura e mais lisa para o texto branco ficar visível, fora do rosto."""
     cands = list(range(A.TOPO_SEGURO + 60, max(A.TOPO_SEGURO + 61, A.BASE_SEGURA - 140 - alt), 30))
+    faces = rostos(img)
+    sem_rosto = [y for y in cands if livre((x0, y, x1, y + alt), faces)]
+    cands = sem_rosto or cands
     return min(cands, key=lambda y: sum(_luz(img, (x0, y, x1, y + alt))[k] * (1, 1.5)[k] for k in (0, 1)))
 
 
@@ -393,15 +491,12 @@ def desenhar_foto(caminho_foto, opcoes, destino):
         caminho_foto = caminho_foto[0]
     ft = ImageOps.exif_transpose(Image.open(caminho_foto)).convert("RGB")
     ft = ImageOps.fit(ft, (W, H), centering=(0.5, 0.45))
-    expo = opcoes.get("exposicao") or A.PERFIL.get("exposicao", 0.6)
-    img = ImageEnhance.Brightness(ft).enhance(expo)
+    img = ImageEnhance.Brightness(ft).enhance(opcoes.get("exposicao") or 1.0)
     texto = "" if opcoes.get("sem_texto") else (opcoes.get("texto") or "").strip()
     if texto:
         pl = plano_texto(img, texto, opcoes)
-        if not opcoes.get("exposicao") and pl["caixa"] == "nenhuma":   # escurece mais só se precisar
-            k = fator_contraste(img, _caixa_texto(pl))
-            if k < 1:
-                img = ImageEnhance.Brightness(img).enhance(k)
+        if not opcoes.get("exposicao") and pl["caixa"] == "nenhuma":   # escurece só se a letra precisar
+            escurecer(img, [_caixa_texto(pl)])
         escrever(img, pl, 0.75 if opcoes.get("sombra", True) else 0)
     marca(img)
     os.makedirs(os.path.dirname(destino), exist_ok=True)
