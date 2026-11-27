@@ -1,0 +1,96 @@
+{
+ "tema": "Lei Seca",
+ "stories": [
+  {
+   "tipo": "bom_dia",
+   "titulo": "Bom dia",
+   "texto": "Sábado chegou, e com ele muita gente saindo à noite. Por isso hoje o papo é sobre Lei Seca. Fica comigo até o fim?",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cafe",
+   "assunto": "abertura sábado Lei Seca",
+   "noticia": 0,
+   "bloco": 1,
+   "link": ""
+  },
+  {
+   "tipo": "pergunta",
+   "titulo": "Pergunta rápida pra começar:",
+   "texto": "Se você for parado numa blitz e o teste der álcool, sabe o que acontece com a CNH, a multa e o carro? A resposta vem no próximo story.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "blitz-noite",
+   "assunto": "pergunta sobre parada em blitz",
+   "noticia": 0,
+   "bloco": 2,
+   "link": ""
+  },
+  {
+   "tipo": "lei_seca",
+   "titulo": "A resposta: pesa bastante",
+   "texto": "Dirigir sob influência de álcool é gravíssima: multa de R$ 2.934,70, suspensão de 12 meses, recolhimento da CNH e retenção do veículo (art. 165 do CTB).",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cor:bordo",
+   "assunto": "penalidades do artigo 165",
+   "noticia": 0,
+   "bloco": 2,
+   "link": ""
+  },
+  {
+   "tipo": "lei_seca",
+   "titulo": "E se a pessoa recusar o bafômetro?",
+   "texto": "Muita gente acha que recusar livra. Não livra: a recusa (art. 165-A) tem as mesmas penalidades de quem dirige sob influência de álcool.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "lei-seca-chave-e-copo",
+   "assunto": "recusa ao teste do bafômetro",
+   "noticia": 0,
+   "bloco": 3,
+   "link": ""
+  },
+  {
+   "tipo": "lei_seca",
+   "titulo": "Agora, a parte que pouca gente sabe:",
+   "texto": "Se repetir em 12 meses, a multa dobra (R$ 5.869,40) e a CNH pode ser cassada. Dependendo do teste, o caso ainda pode ser crime (art. 306).",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cor:escuro",
+   "assunto": "reincidência, cassação e crime",
+   "noticia": 0,
+   "bloco": 3,
+   "link": ""
+  },
+  {
+   "tipo": "dica",
+   "titulo": "E depois da suspensão, como volta?",
+   "texto": "Tem que cumprir o prazo e fazer o curso de reciclagem, com prova. E atenção: dirigir com a CNH suspensa é gravíssima e leva à cassação.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "chave-do-carro",
+   "assunto": "como voltar após suspensão",
+   "noticia": 0,
+   "bloco": 4,
+   "link": ""
+  },
+  {
+   "tipo": "lei_seca",
+   "titulo": "Resumindo:",
+   "texto": "Álcool ou recusa ao bafômetro: multa alta, 12 meses de suspensão e carro retido. Tudo passa por processo com direito de defesa. Se beber, não dirija.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "dúvidas? manda no direct",
+   "fundo": "cor:rosa",
+   "assunto": "resumo do sábado Lei Seca",
+   "noticia": 0,
+   "bloco": 4,
+   "link": ""
+  }
+ ]
+}
