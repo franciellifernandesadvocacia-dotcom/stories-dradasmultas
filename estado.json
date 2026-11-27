@@ -1,5 +1,9 @@
 {
  "offset": 792822402,
  "ultimo_lote": "2026-11-28",
- "lembrete": ""
+ "lembrete": "",
+ "avisado": {
+  "2026-11-27": "49cbd3537a170190135a8fff5493b57c069689fc",
+  "2026-11-28": "45d607df174a2eab8500ccb92cd82dbc0b14cb2f"
+ }
 }
