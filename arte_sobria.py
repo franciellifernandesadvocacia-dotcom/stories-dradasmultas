@@ -93,7 +93,7 @@ def livre(caixa, faces):
     return not any(_cruza(caixa, f) for f in faces)
 
 
-def escurecer(img, caixas, alvo=110):
+def escurecer(img, caixas, alvo=95):
     """Diminui a exposição da foto inteira SÓ se o lugar do texto estiver claro demais (nada de escurecer à toa)."""
     k = min([fator_contraste(img, c, alvo) for c in caixas] or [1.0])
     if k < 0.999:
@@ -586,10 +586,12 @@ def melhor_y(img, alt, x0=60, x1=W - 60, faces=None):
     return min(cands, key=lambda y: sum(_luz(img, (x0, y, x1, y + alt))[k] * (1, 1.5)[k] for k in (0, 1)))
 
 
-def fator_contraste(img, caixa, alvo=100, minimo=0.45):
-    """Quanto escurecer a foto inteira (só exposição) para o texto branco aparecer bem."""
-    m, _ = _luz(img, caixa)
-    return 1.0 if m <= alvo else max(minimo, alvo / m)
+def fator_contraste(img, caixa, alvo=95, minimo=0.4):
+    """Quanto escurecer a foto inteira (só exposição) para o texto branco aparecer bem.
+    Fundo claro OU muito desenhado (textura, cabelo, roupa estampada) atrapalha a leitura: conta os dois."""
+    m, sd = _luz(img, caixa)
+    ef = m + 0.5 * sd
+    return 1.0 if ef <= alvo else max(minimo, alvo / ef)
 
 
 def plano_texto(base, texto, o, cortes=()):
