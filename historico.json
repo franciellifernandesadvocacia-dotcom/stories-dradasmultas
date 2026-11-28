@@ -1,6 +1,7 @@
 {
  "noticias": [
-  "Bêbado, na contramão e com a CNH suspensa no Paraná"
+  "Bêbado, na contramão e com a CNH suspensa no Paraná",
+  "MT teve 111 mortes no trânsito em outubro"
  ],
  "assuntos": [
   "abertura sexta multas irregulares",
@@ -23,16 +24,25 @@
   "suspensa ou cassada diferença",
   "três hipóteses de cassação",
   "dois anos e processo novo",
-  "resumo do sábado CNH cassada"
+  "resumo do sábado CNH cassada",
+  "bom dia tema CNH suspensa",
+  "mortes no trânsito em MT",
+  "o que os números mostram",
+  "abertura domingo CNH suspensa",
+  "suspensão por soma de pontos",
+  "infrações com suspensão direta",
+  "resumo do domingo CNH suspensa"
  ],
  "dias": [
   "2026-11-27",
-  "2026-11-28"
+  "2026-11-28",
+  "2026-11-29"
  ],
  "temas": [
   "multas irregulares",
   "Lei Seca",
-  "CNH cassada"
+  "CNH cassada",
+  "CNH suspensa"
  ],
  "links": [
   {
@@ -40,6 +50,12 @@
    "titulo": "Bêbado, na contramão e com a CNH suspensa no Paraná",
    "fonte": "Catve.com · 27/11",
    "link": "https://catve.com/noticia/9/488966/motorista-embriagado-e-com-cnh-suspensa-e-flagrado-na-contramao-em-cascavel"
+  },
+  {
+   "dia": "2026-11-29",
+   "titulo": "MT teve 111 mortes no trânsito em outubro",
+   "fonte": "Só Notícias · 27/11",
+   "link": "https://www.sonoticias.com.br/geral/mortes-no-transito-em-mato-grosso-tem-leve-aumento-em-outubro-cuiaba-e-sinop-lideram/"
   }
  ],
  "fotos": [
@@ -53,6 +69,9 @@
   "chave-do-carro",
   "cafe",
   "chave-do-carro",
-  "carro-por-dentro"
+  "carro-por-dentro",
+  "cafe",
+  "chave-do-carro",
+  "blitz-noite"
  ]
 }

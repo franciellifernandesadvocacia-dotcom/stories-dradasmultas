@@ -1,0 +1,96 @@
+{
+ "tema": "CNH suspensa",
+ "stories": [
+  {
+   "tipo": "bom_dia",
+   "titulo": "Bom dia",
+   "texto": "Bom domingo! Hoje o papo é sobre CNH suspensa: como ela acontece e quanto tempo dura. Pega o café e vem comigo.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cafe",
+   "assunto": "bom dia tema CNH suspensa",
+   "noticia": 0,
+   "bloco": 1,
+   "link": ""
+  },
+  {
+   "tipo": "noticia",
+   "titulo": "MT teve 111 mortes no trânsito em outubro",
+   "texto": "Dados do Ministério da Justiça mostram 111 mortes no trânsito de MT em outubro, quase quatro por dia. Cuiabá lidera, com 15, seguida de Sinop, com 9. Alta de 20,6% sobre outubro do ano passado.",
+   "fonte": "Só Notícias · 27/11",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cor:escuro",
+   "assunto": "mortes no trânsito em MT",
+   "noticia": 1,
+   "bloco": 1,
+   "link": "https://www.sonoticias.com.br/geral/mortes-no-transito-em-mato-grosso-tem-leve-aumento-em-outubro-cuiaba-e-sinop-lideram/"
+  },
+  {
+   "tipo": "noticia",
+   "titulo": "E o que isso muda pra você?",
+   "texto": "Por trás de cada número tem uma família. E muitas regras de trânsito existem justamente pra frear isso: quem acumula infrações pode ficar um tempo sem dirigir.",
+   "fonte": "Só Notícias · 27/11",
+   "comentario": "Às 11h30: como funciona a suspensão da CNH.",
+   "rodape": "",
+   "fundo": "cor:papel",
+   "assunto": "o que os números mostram",
+   "noticia": 1,
+   "bloco": 1,
+   "link": "https://www.sonoticias.com.br/geral/mortes-no-transito-em-mato-grosso-tem-leve-aumento-em-outubro-cuiaba-e-sinop-lideram/"
+  },
+  {
+   "tipo": "pergunta",
+   "titulo": "Como uma CNH acaba suspensa?",
+   "texto": "Muita gente acha que só perde o direito de dirigir quem bebe e pega o volante. Mas a suspensão pode vir de dois jeitos. Bora ver?",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "chave-do-carro",
+   "assunto": "abertura domingo CNH suspensa",
+   "noticia": 0,
+   "bloco": 2,
+   "link": ""
+  },
+  {
+   "tipo": "cnh_suspensa",
+   "titulo": "Jeito 1: somar pontos",
+   "texto": "Em 12 meses: 20 pontos se tiver 2 ou mais gravíssimas, 30 pontos com 1 gravíssima e 40 sem nenhuma. Chegou nisso, pode vir a suspensão.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "cor:bordo",
+   "assunto": "suspensão por soma de pontos",
+   "noticia": 0,
+   "bloco": 2,
+   "link": ""
+  },
+  {
+   "tipo": "cnh_suspensa",
+   "titulo": "Jeito 2: suspensão direta",
+   "texto": "Algumas infrações já trazem a suspensão, sem precisar somar pontos: Lei Seca, recusa ao bafômetro, racha e velocidade mais de 50% acima do limite.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "",
+   "fundo": "blitz-noite",
+   "assunto": "infrações com suspensão direta",
+   "noticia": 0,
+   "bloco": 2,
+   "link": ""
+  },
+  {
+   "tipo": "dica",
+   "titulo": "Resumindo o que importa",
+   "texto": "Por pontos, a suspensão vai de 6 meses a 1 ano. Antes dela, há processo com direito de defesa. E dirigir suspenso leva à cassação.",
+   "fonte": "",
+   "comentario": "",
+   "rodape": "dúvidas? manda no direct",
+   "fundo": "cor:limao",
+   "assunto": "resumo do domingo CNH suspensa",
+   "noticia": 0,
+   "bloco": 2,
+   "link": ""
+  }
+ ]
+}
